@@ -4,66 +4,121 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Content Factory</title>
-<style>
-  @font-face {
-    font-family: 'Inter';
-    src: local('Inter');
-  }
-  :root {
-    --bg: #0a0a0b;
-    --surface: #131316;
-    --border: #26262b;
-    --accent: #5e6ad2;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    color: #e4e4e7;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2.5rem;
-    text-align: center;
-    max-width: 90vw;
-  }
-  h1 {
-    margin: 0 0 0.5rem;
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
-  p {
-    margin: 0;
-    color: #9a9aa2;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-  }
-  .dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    margin-right: 8px;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div class="card">
-    <h1><span class="dot"></span>Content Factory</h1>
-    <p>Deploy confirmed</p>
-  </div>
+
+<div class="page">
+
+  <header class="header">
+    <h1>Content Factory</h1>
+    <p class="tagline">Keyword in, research + blog + social — out.</p>
+  </header>
+
+  <section class="input-section">
+    <div class="input-row">
+      <input type="text" id="keyword-input" placeholder="Enter a keyword or topic…" autocomplete="off">
+      <button id="generate-btn" class="btn-primary">Generate</button>
+    </div>
+  </section>
+
+  <section class="pipeline" id="pipeline" hidden>
+    <div class="agent-card" id="agent-research" data-state="idle">
+      <div class="agent-card-top">
+        <span class="agent-dot"></span>
+        <span class="agent-check">✓</span>
+        <h3>Research</h3>
+      </div>
+      <p class="agent-status">Idle</p>
+    </div>
+    <div class="agent-card" id="agent-blog" data-state="idle">
+      <div class="agent-card-top">
+        <span class="agent-dot"></span>
+        <span class="agent-check">✓</span>
+        <h3>Blog Post</h3>
+      </div>
+      <p class="agent-status">Idle</p>
+    </div>
+    <div class="agent-card" id="agent-social" data-state="idle">
+      <div class="agent-card-top">
+        <span class="agent-dot"></span>
+        <span class="agent-check">✓</span>
+        <h3>Social Variants</h3>
+      </div>
+      <p class="agent-status">Idle</p>
+    </div>
+  </section>
+
+  <section class="error-card" id="error-card" hidden>
+    <p class="error-title">Generation failed</p>
+    <p class="error-message" id="error-message"></p>
+    <button id="retry-btn" class="btn-secondary">Retry</button>
+  </section>
+
+  <section class="results" id="results" hidden>
+
+    <div class="results-actions">
+      <button id="export-btn" class="btn-secondary">Export All (.md)</button>
+    </div>
+
+    <div class="panel">
+      <button class="panel-header" data-target="panel-research">
+        <span class="panel-chevron">▸</span>
+        <span>Research</span>
+      </button>
+      <div class="panel-body" id="panel-research">
+        <div class="panel-body-inner">
+          <div class="panel-actions">
+            <button class="btn-copy" data-copy-target="research">Copy</button>
+          </div>
+          <div class="markdown-content" id="research-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <button class="panel-header" data-target="panel-blog">
+        <span class="panel-chevron">▸</span>
+        <span>Blog Post</span>
+        <span class="word-count-badge" id="word-count-badge"></span>
+      </button>
+      <div class="panel-body" id="panel-blog">
+        <div class="panel-body-inner">
+          <div class="panel-actions">
+            <button class="btn-copy" data-copy-target="blog">Copy</button>
+          </div>
+          <div class="markdown-content" id="blog-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <button class="panel-header" data-target="panel-social">
+        <span class="panel-chevron">▸</span>
+        <span>Social Variants</span>
+      </button>
+      <div class="panel-body" id="panel-social">
+        <div class="panel-body-inner">
+          <div class="tabs" id="social-tabs">
+            <button class="tab-btn active" data-platform="twitter">Twitter</button>
+            <button class="tab-btn" data-platform="linkedin">LinkedIn</button>
+            <button class="tab-btn" data-platform="instagram">Instagram</button>
+            <button class="tab-btn" data-platform="facebook">Facebook</button>
+            <button class="tab-btn" data-platform="whatsapp">WhatsApp</button>
+          </div>
+          <div class="tab-panels" id="tab-panels"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<script src="/app.js"></script>
 </body>
 </html>
